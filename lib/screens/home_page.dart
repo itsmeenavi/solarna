@@ -46,12 +46,64 @@ class _HomePageState extends State<HomePage> {
 
   // --- Dialog Functions ---
 
-  void _showBuyOptionsDialog(BuildContext context, NftItem item) {
+  // NEW: Dialog for Payment Options
+  void _showPaymentDialog(BuildContext context, NftItem item) {
     showDialog(
       context: context,
       builder: (BuildContext ctx) {
         return AlertDialog(
-          title: Text('Buy ${item['title']}'),
+          title: Text('Confirm Purchase: ${item['title']}'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Price: ${item['price'] ?? 'N/A'}'),
+              const SizedBox(height: 20),
+              const Text('Select Payment Method (Mock):'),
+              // Add mock payment options here
+              RadioListTile<String>(
+                title: const Text('Bank Transfer'),
+                value: 'bank',
+                groupValue: 'bank', // Simple mock, always selected
+                onChanged: (value) {},
+              ),
+              RadioListTile<String>(
+                title: const Text('E-Wallet (Solana Pay)'),
+                value: 'ewallet',
+                groupValue: 'bank', // Simple mock
+                onChanged: (value) {},
+              ),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(ctx).pop();
+              },
+            ),
+            ElevatedButton(
+              child: const Text('Pay Now (Mock)'),
+              onPressed: () {
+                Navigator.of(ctx).pop(); // Close payment dialog
+                print('Payment successful (mock) for ${item['title']}');
+                // Show the next step: Deploy or Deliver
+                _showPostPaymentOptionsDialog(context, item);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // RENAMED: Dialog for Deploy/Deliver Options (previously _showBuyOptionsDialog)
+  void _showPostPaymentOptionsDialog(BuildContext context, NftItem item) {
+    showDialog(
+      context: context,
+      builder: (BuildContext ctx) {
+        return AlertDialog(
+          title: Text('Choose Action for ${item['title']}'),
           content: const Text('Choose an option:'),
           actions: <Widget>[
             TextButton(
@@ -189,70 +241,78 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         title: const Text('Solarna Marketplace'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(8.0), // Reduced padding for cards
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 16.0),
-              child: Text(
-                'Featured NFTs',
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
+            child: Text(
+              'Featured NFTs',
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w600),
             ),
-            Expanded(
-              // Use ListView.builder for potentially longer lists
-              child: ListView.builder(
-                itemCount: _nftItems.length,
-                itemBuilder: (context, index) {
-                  final item = _nftItems[index];
-                  final bool isSaved = widget.isItemSaved(item);
-                  return Card(
-                    margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 6.0),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min, // Make column height fit content
-                        children: [
-                          ListTile(
-                            leading: Icon(
-                              item['icon'] as IconData? ?? Icons.error, 
-                              size: 45,
-                              color: item['color'] as Color? ?? Colors.grey,
-                            ),
-                            title: Text(item['title'] as String? ?? 'No Title', style: const TextStyle(fontWeight: FontWeight.bold)),
-                            subtitle: Text(item['subtitle'] as String? ?? ''),
-                            // contentPadding: EdgeInsets.zero, // Adjust if needed
+          ),
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 6.0),
+              itemCount: _nftItems.length,
+              itemBuilder: (context, index) {
+                final item = _nftItems[index];
+                final bool isSaved = widget.isItemSaved(item);
+                return Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        ListTile(
+                          leading: Icon(
+                            item['icon'] as IconData? ?? Icons.error,
+                            size: 45,
+                            color: item['color'] as Color? ?? Colors.grey[400],
                           ),
-                          const SizedBox(height: 8),
-                          Row(
+                          title: Text(
+                            item['title'] as String? ?? 'No Title',
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
+                          ),
+                          subtitle: Padding(
+                            padding: const EdgeInsets.only(top: 4.0),
+                            child: Text(item['subtitle'] as String? ?? ''),
+                          ),
+                          contentPadding: const EdgeInsets.only(left: 0, right: 10, top: 5, bottom: 5),
+                        ),
+                        const Divider(height: 15, indent: 10, endIndent: 10),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                          child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Padding(
-                                padding: const EdgeInsets.only(left: 16.0), // Align price text
-                                child: Text(
-                                  item['price'] as String? ?? 'N/A',
-                                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Theme.of(context).primaryColorDark),
+                              Text(
+                                item['price'] as String? ?? 'N/A',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                  color: Theme.of(context).colorScheme.primary,
                                 ),
                               ),
-                              Row( // Row for buttons
+                              Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                   IconButton(
+                                  IconButton(
                                     icon: Icon(
                                       isSaved ? Icons.bookmark : Icons.bookmark_border,
-                                      color: isSaved ? Theme.of(context).primaryColor : Colors.grey,
+                                      color: isSaved ? Theme.of(context).colorScheme.primary : Colors.grey[500],
                                     ),
+                                    iconSize: 28,
                                     tooltip: isSaved ? 'Unsave Item' : 'Save Item',
                                     onPressed: () {
-                                      widget.onToggleSave(item); // Use the callback
+                                      widget.onToggleSave(item);
                                     },
                                   ),
-                                  const SizedBox(width: 8),
+                                  const SizedBox(width: 0),
                                   ElevatedButton(
                                     onPressed: () {
-                                      _showBuyOptionsDialog(context, item);
+                                      _showPaymentDialog(context, item);
                                     },
                                     child: const Text('Buy'),
                                   ),
@@ -260,29 +320,28 @@ class _HomePageState extends State<HomePage> {
                               )
                             ],
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                  );
-                },
-              ),
+                  ),
+                );
+              },
             ),
-             Padding(
-               padding: const EdgeInsets.all(16.0),
-               child: Text(
-                'Browse Categories', // Placeholder for categories
-                style: Theme.of(context).textTheme.headlineSmall,
-                       ),
-             ),
-             // Add category placeholders or a GridView later
-            const Center(
-              child: Padding(
-                padding: EdgeInsets.only(bottom: 20.0),
-                child: Text('More categories coming soon...')
-              )
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16.0, 24.0, 16.0, 10.0),
+            child: Text(
+              'Browse Categories',
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w600),
             ),
-          ],
-        ),
+          ),
+          const Center(
+            child: Padding(
+              padding: EdgeInsets.only(bottom: 20.0),
+              child: Text('More categories coming soon...', style: TextStyle(color: Colors.grey)),
+            )
+          ),
+        ],
       ),
     );
   }

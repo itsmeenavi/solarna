@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import './screens/auth_screen.dart'; // Import the auth screen
+import './screens/main_app_screen.dart'; // Import MainAppScreen for logout route
 
 void main() {
   runApp(const MyApp());
@@ -8,16 +9,90 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Solarna',
       theme: ThemeData(
-        primarySwatch: Colors.teal, // Example theme color
+        // Define the primary color swatch
+        primarySwatch: Colors.teal,
+        // Define the color scheme based on the primary color
+        colorScheme: ColorScheme.fromSwatch(
+          primarySwatch: Colors.teal,
+          accentColor: Colors.amber, // Example accent color
+          brightness: Brightness.light,
+        ),
+        scaffoldBackgroundColor: Colors.grey[50], // Lighter background
+        appBarTheme: AppBarTheme(
+          backgroundColor: Colors.teal[600], // Slightly darker AppBar
+          foregroundColor: Colors.white,
+          elevation: 2,
+          centerTitle: true,
+          titleTextStyle: const TextStyle(
+             fontSize: 20.0, 
+             fontWeight: FontWeight.w500,
+             color: Colors.white
+          ),
+        ),
+        cardTheme: CardTheme(
+          elevation: 3,
+          margin: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12.0),
+          ),
+          clipBehavior: Clip.antiAlias, // Improve rendering of rounded corners
+        ),
+         bottomNavigationBarTheme: BottomNavigationBarThemeData(
+           selectedItemColor: Colors.teal[700],
+           unselectedItemColor: Colors.grey[600],
+           backgroundColor: Colors.white,
+           elevation: 5,
+           showUnselectedLabels: true,
+           type: BottomNavigationBarType.fixed, 
+         ),
+         dialogTheme: DialogTheme(
+           shape: RoundedRectangleBorder(
+             borderRadius: BorderRadius.circular(15.0)
+           ),
+           elevation: 5,
+         ),
+         elevatedButtonTheme: ElevatedButtonThemeData(
+           style: ElevatedButton.styleFrom(
+             foregroundColor: Colors.white,
+             backgroundColor: Colors.teal, // Button background
+             shape: RoundedRectangleBorder(
+               borderRadius: BorderRadius.circular(8.0),
+             ),
+             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+           ),
+         ),
+         textButtonTheme: TextButtonThemeData(
+           style: TextButton.styleFrom(
+             foregroundColor: Colors.teal[700], // Text button color
+           ),
+         ),
+         inputDecorationTheme: InputDecorationTheme(
+           border: OutlineInputBorder(
+             borderRadius: BorderRadius.circular(8.0),
+             borderSide: BorderSide(color: Colors.grey[400]!)
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8.0),
+              borderSide: BorderSide(color: Colors.teal, width: 2.0),
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 12.0),
+         ),
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: const AuthScreen(), // Start with AuthScreen
+      // Define initial route and potentially other routes if needed
+      initialRoute: '/', 
+      routes: {
+        '/': (context) => const AuthScreen(), // Auth screen is the initial route
+        '/main': (context) => const MainAppScreen(), // Main app screen after login
+        // Add other routes here if necessary
+      },
+      // The home property is ignored when routes are specified
+      // home: const AuthScreen(),
     );
   }
 }
