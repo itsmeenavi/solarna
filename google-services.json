@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "771409009526",
+    "project_id": "solarna-11792",
+    "storage_bucket": "solarna-11792.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:771409009526:android:c57bb8e88abd52e053f857",
+        "android_client_info": {
+          "package_name": "com.company.solarna"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB4qFDFStpVsh2n3qG8JP34RUkn1uJkVf4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,8 +1,56 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'dart:io' show Platform; // Import Platform
+// import 'package:firebase_auth/firebase_auth.dart'; // Remove Firebase Auth import
+// import 'firebase_options.dart'; // Remove this import
+
 import './screens/auth_screen.dart'; // Import the auth screen
 import './screens/main_app_screen.dart'; // Import MainAppScreen for logout route
 
-void main() {
+// --- MANUAL FIREBASE CONFIGURATION (Workaround) ---
+// Replace placeholders with your actual Firebase project values
+// Found in Firebase Console -> Project Settings -> Your Apps
+const firebaseOptionsAndroid = FirebaseOptions(
+  apiKey: "AIzaSyB4qFDFStpVsh2n3qG8JP34RUkn1uJkVf4", // From google-services.json
+  appId: "1:771409009526:android:c57bb8e88abd52e053f857", // From google-services.json
+  messagingSenderId: "771409009526", // From google-services.json (project_number)
+  projectId: "solarna-11792",             // From google-services.json
+  storageBucket: "solarna-11792.firebasestorage.app", // Added from google-services.json (Optional, but good to have)
+);
+
+// Keep iOS placeholders for now unless you have the values
+const firebaseOptionsIOS = FirebaseOptions(
+  apiKey: "YOUR_IOS_API_KEY",       
+  appId: "YOUR_IOS_APP_ID",         
+  messagingSenderId: "YOUR_IOS_SENDER_ID", 
+  projectId: "YOUR_PROJECT_ID",             
+  // storageBucket: "YOUR_PROJECT_ID.appspot.com", 
+  // iosBundleId: "YOUR_IOS_BUNDLE_ID", 
+);
+// --- END MANUAL CONFIGURATION ---
+
+void main() async { 
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize Firebase manually based on platform
+  FirebaseOptions currentPlatformOptions;
+  if (Platform.isAndroid) {
+    currentPlatformOptions = firebaseOptionsAndroid;
+  } else if (Platform.isIOS) {
+    currentPlatformOptions = firebaseOptionsIOS;
+  } else {
+    // Handle other platforms or throw an error if needed
+    // For now, we might default to Android or throw
+    print("Warning: Unsupported platform for manual Firebase config. Defaulting might fail.");
+    // As a fallback, maybe use Android options, but this isn't robust
+    // Or throw Exception("Unsupported platform for manual Firebase config");
+     throw Exception("Firebase not configured for this platform (manual setup)");
+  }
+
+  await Firebase.initializeApp(
+    // options: DefaultFirebaseOptions.currentPlatform, // Don't use this
+    options: currentPlatformOptions, // Use manually defined options
+  );
   runApp(const MyApp());
 }
 
@@ -84,15 +132,13 @@ class MyApp extends StatelessWidget {
          ),
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      // Define initial route and potentially other routes if needed
-      initialRoute: '/', 
+      // Remove StreamBuilder, directly show AuthScreen initially
+      home: const AuthScreen(),
+      // Define routes for manual navigation later
       routes: {
-        '/': (context) => const AuthScreen(), // Auth screen is the initial route
-        '/main': (context) => const MainAppScreen(), // Main app screen after login
-        // Add other routes here if necessary
+        // '/': (context) => const AuthScreen(), // Keep AuthScreen as default
+        '/main': (context) => const MainAppScreen(), 
       },
-      // The home property is ignored when routes are specified
-      // home: const AuthScreen(),
     );
   }
 }

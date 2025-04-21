@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../screens/auth_screen.dart'; // Assuming AuthScreen is in screens folder
+// import 'package:firebase_auth/firebase_auth.dart'; // Remove Firebase Auth import
+import '../services/auth_service.dart'; // Import the custom AuthService
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -44,6 +45,8 @@ class ProfilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AuthService authService = AuthService(); // Instantiate AuthService
+
     return Scaffold(
       // AppBar theme is applied from main.dart
       appBar: AppBar(
@@ -101,10 +104,29 @@ class ProfilePage extends StatelessWidget {
             context,
             icon: Icons.logout,
             title: 'Logout',
-            onTap: () {
-              print('Logout tapped (mock)');
-              // Navigate back to AuthScreen (clearing navigation stack)
-              Navigator.of(context).pushNamedAndRemoveUntil('/', (Route<dynamic> route) => false);
+            onTap: () async { 
+              print('Logout button tapped (using AuthService)');
+              try {
+                // Call signOut from our custom AuthService
+                await authService.signOut();
+                
+                // Navigate back to AuthScreen manually
+                // Ensure the context is still valid before navigating
+                if (context.mounted) {
+                  Navigator.of(context).pushNamedAndRemoveUntil('/', (Route<dynamic> route) => false);
+                }
+              } catch (e) {
+                print('Error during custom signout: $e');
+                // Optionally show a SnackBar error to the user
+                if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Error signing out: $e'),
+                        backgroundColor: Theme.of(context).colorScheme.error,
+                      ),
+                    );
+                }
+              }
             },
           ),
           // Add more profile options as needed (e.g., using _buildProfileOption helper)
