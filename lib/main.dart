@@ -1,55 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'dart:io' show Platform; // Import Platform
+import 'dart:io' show Platform; 
 // import 'package:firebase_auth/firebase_auth.dart'; // Remove Firebase Auth import
-// import 'firebase_options.dart'; // Remove this import
+// import 'firebase_options.dart'; // Don't use generated options file
+import 'firebase_manual_config.dart'; // <-- Import the manual config file
 
 import './screens/auth_screen.dart'; // Import the auth screen
 import './screens/main_app_screen.dart'; // Import MainAppScreen for logout route
 
-// --- MANUAL FIREBASE CONFIGURATION (Workaround) ---
-// Replace placeholders with your actual Firebase project values
-// Found in Firebase Console -> Project Settings -> Your Apps
-const firebaseOptionsAndroid = FirebaseOptions(
-  apiKey: "AIzaSyB4qFDFStpVsh2n3qG8JP34RUkn1uJkVf4", // From google-services.json
-  appId: "1:771409009526:android:c57bb8e88abd52e053f857", // From google-services.json
-  messagingSenderId: "771409009526", // From google-services.json (project_number)
-  projectId: "solarna-11792",             // From google-services.json
-  storageBucket: "solarna-11792.firebasestorage.app", // Added from google-services.json (Optional, but good to have)
-);
-
-// Keep iOS placeholders for now unless you have the values
-const firebaseOptionsIOS = FirebaseOptions(
-  apiKey: "YOUR_IOS_API_KEY",       
-  appId: "YOUR_IOS_APP_ID",         
-  messagingSenderId: "YOUR_IOS_SENDER_ID", 
-  projectId: "YOUR_PROJECT_ID",             
-  // storageBucket: "YOUR_PROJECT_ID.appspot.com", 
-  // iosBundleId: "YOUR_IOS_BUNDLE_ID", 
-);
-// --- END MANUAL CONFIGURATION ---
+// --- Manual config is now in firebase_manual_config.dart ---
 
 void main() async { 
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Initialize Firebase manually based on platform
+  // Determine platform options from the manual config file
   FirebaseOptions currentPlatformOptions;
   if (Platform.isAndroid) {
-    currentPlatformOptions = firebaseOptionsAndroid;
+    currentPlatformOptions = firebaseOptionsAndroidManual; // <-- Use constant from manual config
   } else if (Platform.isIOS) {
-    currentPlatformOptions = firebaseOptionsIOS;
+    // Make sure you've added your iOS config in firebase_manual_config.dart
+    currentPlatformOptions = firebaseOptionsIOSManual; // <-- Use constant from manual config
   } else {
-    // Handle other platforms or throw an error if needed
-    // For now, we might default to Android or throw
-    print("Warning: Unsupported platform for manual Firebase config. Defaulting might fail.");
-    // As a fallback, maybe use Android options, but this isn't robust
-    // Or throw Exception("Unsupported platform for manual Firebase config");
      throw Exception("Firebase not configured for this platform (manual setup)");
   }
 
   await Firebase.initializeApp(
-    // options: DefaultFirebaseOptions.currentPlatform, // Don't use this
-    options: currentPlatformOptions, // Use manually defined options
+    options: currentPlatformOptions, // Use options from manual config file
   );
   runApp(const MyApp());
 }
