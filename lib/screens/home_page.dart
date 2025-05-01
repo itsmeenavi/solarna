@@ -16,7 +16,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  // Mock NFT data
+  // Mock NFT data (Inverter Removed)
   final List<NftItem> _nftItems = [
     {
       'id': 'solar_panel_001',
@@ -24,7 +24,7 @@ class _HomePageState extends State<HomePage> {
       'subtitle': 'High-efficiency monocrystalline panel.',
       'icon': Icons.solar_power,
       'color': Colors.orange,
-      'price': '2.5 SOL'
+      'price': '2.5' // Store price as string for parsing
     },
     {
       'id': 'solar_pump_001',
@@ -32,63 +32,179 @@ class _HomePageState extends State<HomePage> {
       'subtitle': 'Reliable solar water pump for agriculture.',
       'icon': Icons.water_drop,
       'color': Colors.blue,
-      'price': '1.8 SOL'
+      'price': '1.8' // Store price as string for parsing
     },
-     {
-      'id': 'solar_inverter_001',
-      'title': 'PowerGrid Inverter',
-      'subtitle': 'Convert solar energy efficiently.',
-      'icon': Icons.electrical_services,
-      'color': Colors.green,
-      'price': '1.2 SOL'
-    },
+    // PowerGrid Inverter removed
   ];
 
-  // --- Dialog Functions ---
+  // --- Dialog Functions (Refined Text & Removed "Mock") ---
 
-  // NEW: Dialog for Payment Options
   void _showPaymentDialog(BuildContext context, NftItem item) {
+    int quantity = 1; 
+    final double unitPrice = double.tryParse(item['price'] as String? ?? '0') ?? 0;
+    String selectedPaymentMethod = 'bank'; 
+
     showDialog(
       context: context,
       builder: (BuildContext ctx) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setStateDialog) {
+            double totalPrice = unitPrice * quantity;
+
+            return AlertDialog(
+              title: const Text('Order Summary'),
+              content: SingleChildScrollView( 
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Quantity Selector
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('Quantity:', style: TextStyle(fontSize: 16)),
+                        Row(
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.remove_circle_outline), 
+                              onPressed: quantity <= 1 ? null : () { 
+                                setStateDialog(() {
+                                  quantity--;
+                                });
+                              },
+                              iconSize: 28,
+                            ),
+                            Text('$quantity', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                            IconButton(
+                              icon: const Icon(Icons.add_circle_outline), 
+                              onPressed: () {
+                                setStateDialog(() {
+                                   quantity++;
+                                });
+                              },
+                              iconSize: 28,
+                           ),
+                          ],
+                        )
+                      ],
+                    ),
+                    const SizedBox(height: 15),
+                    Text(
+                      'Unit Price: ${unitPrice.toStringAsFixed(2)} SOL', // Added SOL
+                      style: TextStyle(color: Colors.grey[600])
+                    ),
+                    const SizedBox(height: 5),
+                     Text(
+                      'Total Price: ${totalPrice.toStringAsFixed(2)} SOL', // Added SOL
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17)
+                    ),
+                    const SizedBox(height: 20),
+                    const Divider(),
+                    const SizedBox(height: 15),
+                    const Text('Select Payment Method:'), // Refined Text
+                    // Updated RadioListTiles to capture selection
+                    RadioListTile<String>(
+                       title: const Text('Bank Transfer'), 
+                       value: 'bank', 
+                       groupValue: selectedPaymentMethod, 
+                       onChanged: (value) {
+                         if (value != null) {
+                           setStateDialog(() { selectedPaymentMethod = value; });
+                         }
+                       },
+                       dense: true, 
+                       contentPadding: EdgeInsets.zero,
+                     ),
+                     RadioListTile<String>(
+                       title: const Text('E-Wallet (Solana Pay)'), 
+                       value: 'ewallet', 
+                       groupValue: selectedPaymentMethod, 
+                       onChanged: (value) {
+                         if (value != null) {
+                           setStateDialog(() { selectedPaymentMethod = value; });
+                         }
+                       },
+                       dense: true, 
+                       contentPadding: EdgeInsets.zero,
+                     ),
+                  ],
+                ),
+              ),
+              actions: <Widget>[
+                TextButton(
+                  child: const Text('Cancel'),
+                  onPressed: () {
+                    Navigator.of(ctx).pop();
+                  },
+                ),
+                ElevatedButton(
+                  child: Text('Pay ${totalPrice.toStringAsFixed(2)} SOL'), // Removed (Mock)
+                  onPressed: () {
+                    Navigator.of(ctx).pop(); 
+                    print('Payment initiated via $selectedPaymentMethod for $quantity x ${item['title']}'); // Removed (mock)
+                    
+                    if (selectedPaymentMethod == 'bank') {
+                      _showBankPaymentDetailsDialog(context, item, quantity, totalPrice);
+                    } else {
+                      print('Payment successful via $selectedPaymentMethod'); // Removed (mock)
+                      _showPostPaymentOptionsDialog(context, item, quantity); 
+                    }
+                  },
+                ),
+              ],
+            );
+          }
+        );
+      },
+    );
+  }
+
+  void _showBankPaymentDetailsDialog(BuildContext context, NftItem item, int quantity, double totalPrice) {
+     final formKey = GlobalKey<FormState>();
+
+    showDialog(
+      context: context,
+      barrierDismissible: false, 
+      builder: (BuildContext ctx) {
         return AlertDialog(
-          title: Text('Confirm Purchase: ${item['title']}'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Price: ${item['price'] ?? 'N/A'}'),
-              const SizedBox(height: 20),
-              const Text('Select Payment Method (Mock):'),
-              // Add mock payment options here
-              RadioListTile<String>(
-                title: const Text('Bank Transfer'),
-                value: 'bank',
-                groupValue: 'bank', // Simple mock, always selected
-                onChanged: (value) {},
+          title: const Text('Bank Transfer Instructions'),
+          content: Form(
+            key: formKey,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Please transfer the amount below to the provided account and enter the reference number.'), // Refined text
+                  const SizedBox(height: 20),
+                  Text(
+                    'Amount: ${totalPrice.toStringAsFixed(2)} SOL', // Added SOL
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)
+                  ),
+                  const SizedBox(height: 10),
+                  const Text('Bank Account: SOL-12345-6789'), // Refined text
+                   const SizedBox(height: 20),
+                   TextFormField(
+                     decoration: const InputDecoration(
+                       labelText: 'Transfer Reference Number',
+                       hintText: 'Enter reference number here'
+                     ),
+                   ),
+                ],
               ),
-              RadioListTile<String>(
-                title: const Text('E-Wallet (Solana Pay)'),
-                value: 'ewallet',
-                groupValue: 'bank', // Simple mock
-                onChanged: (value) {},
-              ),
-            ],
+            ),
           ),
           actions: <Widget>[
-            TextButton(
+             TextButton(
               child: const Text('Cancel'),
-              onPressed: () {
-                Navigator.of(ctx).pop();
-              },
+              onPressed: () => Navigator.of(ctx).pop(),
             ),
             ElevatedButton(
-              child: const Text('Pay Now (Mock)'),
+              child: const Text('Confirm Payment'), // Removed (Mock)
               onPressed: () {
-                Navigator.of(ctx).pop(); // Close payment dialog
-                print('Payment successful (mock) for ${item['title']}');
-                // Show the next step: Deploy or Deliver
-                _showPostPaymentOptionsDialog(context, item);
+                 Navigator.of(ctx).pop(); 
+                 print('Bank Payment Confirmed by User'); // Removed (Mock)
+                 _showPostPaymentOptionsDialog(context, item, quantity);
               },
             ),
           ],
@@ -97,31 +213,30 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // RENAMED: Dialog for Deploy/Deliver Options (previously _showBuyOptionsDialog)
-  void _showPostPaymentOptionsDialog(BuildContext context, NftItem item) {
+  void _showPostPaymentOptionsDialog(BuildContext context, NftItem item, int quantity) {
     showDialog(
       context: context,
       builder: (BuildContext ctx) {
         return AlertDialog(
-          title: Text('Choose Action for ${item['title']}'),
-          content: const Text('Choose an option:'),
+          title: const Text('Select Fulfillment'),
+          content: const Text('Select how you want to receive your item(s).'), // Refined text
           actions: <Widget>[
             TextButton(
-              child: const Text('Deliver'),
+              child: const Text('Deliver Item(s)'), // Refined text
               onPressed: () {
-                Navigator.of(ctx).pop(); // Close this dialog
-                _showDeliverDialog(context, item); // Show delivery dialog
+                Navigator.of(ctx).pop(); 
+                _showDeliverDialog(context, item, quantity); 
               },
             ),
             TextButton(
-              child: const Text('Deploy'),
+              child: const Text('Deploy Item(s)'), // Refined text
               onPressed: () {
-                Navigator.of(ctx).pop(); // Close this dialog
-                _showDeployDialog(context, item); // Show deploy dialog
+                Navigator.of(ctx).pop(); 
+                _showDeployDialog(context, item, quantity); 
               },
             ),
             TextButton(
-              child: const Text('Cancel'),
+              child: const Text('Cancel Purchase'), // Refined text
               onPressed: () {
                 Navigator.of(ctx).pop();
               },
@@ -132,26 +247,27 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void _showDeliverDialog(BuildContext context, NftItem item) {
+  void _showDeliverDialog(BuildContext context, NftItem item, int quantity) {
     final formKey = GlobalKey<FormState>();
-    // Add TextEditingControllers if you need to capture input
 
     showDialog(
       context: context,
       builder: (BuildContext ctx) {
         return AlertDialog(
-          title: const Text('Delivery Details'),
+          title: const Text('Enter Delivery Address'),
           content: Form(
             key: formKey,
             child: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
-                  TextFormField(decoration: const InputDecoration(labelText: 'Country')),
+                  TextFormField(decoration: const InputDecoration(labelText: 'Country/Region')),
                   TextFormField(decoration: const InputDecoration(labelText: 'Province/State')),
                   TextFormField(decoration: const InputDecoration(labelText: 'City')),
                   TextFormField(decoration: const InputDecoration(labelText: 'Postal Code')),
                   TextFormField(decoration: const InputDecoration(labelText: 'Address Line 1')),
+                  TextFormField(decoration: const InputDecoration(labelText: 'Address Line 2 (Optional)')),
+                  TextFormField(decoration: const InputDecoration(labelText: 'Contact Phone (Optional)')),
                 ],
               ),
             ),
@@ -162,11 +278,14 @@ class _HomePageState extends State<HomePage> {
               onPressed: () => Navigator.of(ctx).pop(),
             ),
             ElevatedButton(
-              child: const Text('Confirm Delivery'),
+              child: const Text('Confirm Delivery Address'), // Refined text
               onPressed: () {
-                // Add form validation and delivery logic here
-                print('Delivery confirmed for ${item['title']} (Mock)');
+                print('Delivery confirmed for $quantity x ${item['title']}'); // Removed (Mock)
                 Navigator.of(ctx).pop();
+                // Optionally show a success message
+                ScaffoldMessenger.of(context).showSnackBar(
+                   const SnackBar(content: Text('Delivery scheduled!'), duration: Duration(seconds: 2))
+                );
               },
             ),
           ],
@@ -175,61 +294,62 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void _showDeployDialog(BuildContext context, NftItem item) {
-     String? selectedFarm = 'farm1'; // Default value
+  void _showDeployDialog(BuildContext context, NftItem item, int quantity) {
+     String? selectedFarm = 'farm1'; 
 
     showDialog(
-      context: context,
-      // Use StatefulBuilder to manage state within the dialog
-      builder: (BuildContext ctx) {
-        return StatefulBuilder(
-          builder: (BuildContext context, StateSetter setStateDialog) {
-            return AlertDialog(
-              title: const Text('Deploy Options'),
-              content: Column(
+        context: context,
+        builder: (BuildContext ctx) {
+          return StatefulBuilder(
+            builder: (BuildContext context, StateSetter setStateDialog) {
+              return AlertDialog(
+                title: const Text('Select Deployment Location'),
+                content: Column(
                  mainAxisSize: MainAxisSize.min,
                  crossAxisAlignment: CrossAxisAlignment.start,
                  children: <Widget>[
-                   const Text('Choose Farm:'),
+                   const Text('Choose deployment location:'), // Refined text
                    RadioListTile<String>(
-                     title: const Text('Farm One'),
+                     title: const Text('Solarna Farm Alpha'), // Refined text
                      value: 'farm1',
                      groupValue: selectedFarm,
                      onChanged: (String? value) {
-                        setStateDialog(() {
-                           selectedFarm = value;
-                        });
+                        setStateDialog(() { selectedFarm = value; });
                      },
+                     dense: true,
                    ),
                    RadioListTile<String>(
-                     title: const Text('Farm Two'),
+                     title: const Text('Solarna Farm Beta'), // Refined text
                      value: 'farm2',
                      groupValue: selectedFarm,
                      onChanged: (String? value) {
-                       setStateDialog(() {
-                          selectedFarm = value;
-                       });
+                       setStateDialog(() { selectedFarm = value; });
                      },
+                     dense: true,
                    ),
                  ],
               ),
-              actions: <Widget>[
-                TextButton(
-                  child: const Text('Cancel'),
-                  onPressed: () => Navigator.of(ctx).pop(),
-                ),
-                ElevatedButton(
-                  child: const Text('Deploy'),
-                  onPressed: () {
-                    print('Deploy confirmed for ${item['title']} to $selectedFarm (Mock)');
-                    Navigator.of(ctx).pop();
-                  },
-                ),
-              ],
-            );
-          }
-        );
-      },
+                actions: <Widget>[
+                  TextButton(
+                    child: const Text('Cancel'),
+                    onPressed: () => Navigator.of(ctx).pop(),
+                  ),
+                  ElevatedButton(
+                    child: const Text('Confirm Deployment'), // Refined text
+                    onPressed: () {
+                      print('Deploy confirmed for $quantity x ${item['title']} to $selectedFarm'); // Removed (Mock)
+                      Navigator.of(ctx).pop();
+                       // Optionally show a success message
+                      ScaffoldMessenger.of(context).showSnackBar(
+                         SnackBar(content: Text('Deployment to $selectedFarm initiated!'), duration: Duration(seconds: 2))
+                      );
+                    },
+                  ),
+                ],
+              );
+            }
+          );
+        }
     );
   }
 
@@ -288,7 +408,7 @@ class _HomePageState extends State<HomePage> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                item['price'] as String? ?? 'N/A',
+                                '${item['price'] as String? ?? 'N/A'} SOL', // Added SOL back
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 16,

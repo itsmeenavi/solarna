@@ -43,6 +43,136 @@ class ProfilePage extends StatelessWidget {
      );
   }
 
+  // --- Rent Payment Dialogs --- 
+
+  void _showSelectPropertyDialog(BuildContext context) {
+    String? selectedProperty = 'property1'; // Default value
+    const double mockRentAmount = 1.5; // Example rent amount in SOL
+
+    showDialog(
+      context: context,
+      builder: (BuildContext ctx) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setStateDialog) {
+            return AlertDialog(
+              title: const Text('Select Property for Rent Payment'),
+              content: Column(
+                 mainAxisSize: MainAxisSize.min,
+                 crossAxisAlignment: CrossAxisAlignment.start,
+                 children: <Widget>[
+                   const Text('Select the recipient:'),
+                   RadioListTile<String>(
+                     title: const Text('Main Residence (Landlord A)'), 
+                     value: 'property1',
+                     groupValue: selectedProperty,
+                     onChanged: (String? value) {
+                        setStateDialog(() { selectedProperty = value; });
+                     },
+                     dense: true,
+                   ),
+                   RadioListTile<String>(
+                     title: const Text('Secondary Unit (Landlord B)'), 
+                     value: 'property2',
+                     groupValue: selectedProperty,
+                     onChanged: (String? value) {
+                       setStateDialog(() { selectedProperty = value; });
+                     },
+                      dense: true,
+                   ),
+                   const SizedBox(height: 20),
+                   Text(
+                      'Rent Due: ${mockRentAmount.toStringAsFixed(2)} SOL', 
+                      style: const TextStyle(fontWeight: FontWeight.bold)
+                    ),
+                 ],
+              ),
+              actions: <Widget>[
+                TextButton(
+                  child: const Text('Cancel'),
+                  onPressed: () => Navigator.of(ctx).pop(),
+                ),
+                ElevatedButton(
+                  child: const Text('Proceed to Payment'),
+                  onPressed: () {
+                    Navigator.of(ctx).pop(); // Close property selection
+                    print('Proceeding to pay rent for $selectedProperty');
+                    // Show the bank payment details dialog
+                    _showRentBankPaymentDialog(context, selectedProperty ?? 'Unknown Property', mockRentAmount);
+                  },
+                ),
+              ],
+            );
+          }
+        );
+      },
+    );
+  }
+
+  void _showRentBankPaymentDialog(BuildContext context, String propertyName, double rentAmount) {
+    final formKey = GlobalKey<FormState>(); 
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext ctx) {
+        return AlertDialog(
+          title: const Text('Bank Transfer for Rent'),
+          content: Form(
+            key: formKey,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Please transfer the rent amount for "$propertyName" to the account below.'),
+                  const SizedBox(height: 20),
+                  Text(
+                    'Amount: ${rentAmount.toStringAsFixed(2)} SOL',
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)
+                  ),
+                  const SizedBox(height: 10),
+                  const Text('Landlord Bank Account: SOL-RENT-9876'), // Mock account
+                   const SizedBox(height: 20),
+                   TextFormField(
+                     decoration: const InputDecoration(
+                       labelText: 'Transfer Reference Number',
+                       hintText: 'E.g., Rent Payment May'
+                     ),
+                   ),
+                ],
+              ),
+            ),
+          ),
+          actions: <Widget>[
+             TextButton(
+              child: const Text('Cancel'),
+              onPressed: () => Navigator.of(ctx).pop(),
+            ),
+            ElevatedButton(
+              child: const Text('Confirm Payment Sent'),
+              onPressed: () {
+                 Navigator.of(ctx).pop(); 
+                 print('Rent Bank Payment Confirmed by User for $propertyName');
+                  // Show confirmation SnackBar
+                 if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Rent payment for $propertyName confirmed!'),
+                        duration: const Duration(seconds: 3),
+                        backgroundColor: Colors.green[700],
+                      ),
+                    );
+                 }
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // --- End Rent Payment Dialogs --- 
+
   @override
   Widget build(BuildContext context) {
     final AuthService authService = AuthService(); // Instantiate AuthService
@@ -127,6 +257,14 @@ class ProfilePage extends StatelessWidget {
                     );
                 }
               }
+            },
+          ),
+          _buildProfileOption(
+            context,
+            icon: Icons.house_siding, // Icon for rent/property
+            title: 'Pay My Rent',
+            onTap: () {
+              _showSelectPropertyDialog(context);
             },
           ),
           // Add more profile options as needed (e.g., using _buildProfileOption helper)

@@ -38,18 +38,21 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Solarna',
       theme: ThemeData(
-        // Define the primary color swatch
-        primarySwatch: Colors.teal,
-        // Define the color scheme based on the primary color
-        colorScheme: ColorScheme.fromSwatch(
-          primarySwatch: Colors.teal,
-          accentColor: Colors.amber, // Example accent color
-          brightness: Brightness.light,
+        // Revert to Light Theme with Teal accents
+        colorScheme: ColorScheme.fromSeed(
+           seedColor: const Color(0xFF008080), // Teal
+           brightness: Brightness.light, // Set brightness to light
         ),
-        scaffoldBackgroundColor: Colors.grey[50], // Lighter background
+        // Use the color scheme for consistency
+        primaryColor: const Color(0xFF008080),
+        
+        // Set light background
+        scaffoldBackgroundColor: Colors.white, // White background
+
         appBarTheme: AppBarTheme(
-          backgroundColor: Colors.teal[600], // Slightly darker AppBar
-          foregroundColor: Colors.white,
+          // Use primary color variant for AppBar
+          backgroundColor: const Color(0xFF006666), // Darker Teal
+          foregroundColor: Colors.white, // Keep text white
           elevation: 2,
           centerTitle: true,
           titleTextStyle: const TextStyle(
@@ -59,31 +62,36 @@ class MyApp extends StatelessWidget {
           ),
         ),
         cardTheme: CardTheme(
-          elevation: 3,
+          elevation: 2, // Slightly less elevation for light theme
           margin: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12.0),
           ),
-          clipBehavior: Clip.antiAlias, // Improve rendering of rounded corners
+          clipBehavior: Clip.antiAlias, 
+          color: Colors.white, // Explicitly white cards
         ),
          bottomNavigationBarTheme: BottomNavigationBarThemeData(
-           selectedItemColor: Colors.teal[700],
-           unselectedItemColor: Colors.grey[600],
-           backgroundColor: Colors.white,
+           selectedItemColor: const Color(0xFF008080), // Teal for selected
+           unselectedItemColor: Colors.grey[600], 
+           backgroundColor: Colors.white, 
            elevation: 5,
            showUnselectedLabels: true,
            type: BottomNavigationBarType.fixed, 
          ),
          dialogTheme: DialogTheme(
+           backgroundColor: Colors.white, // White background for dialogs
            shape: RoundedRectangleBorder(
              borderRadius: BorderRadius.circular(15.0)
            ),
            elevation: 5,
+           // Adjust text styles for light background
+           titleTextStyle: const TextStyle(color: Colors.black87, fontSize: 20.0, fontWeight: FontWeight.bold), 
+           contentTextStyle: const TextStyle(color: Colors.black54), 
          ),
          elevatedButtonTheme: ElevatedButtonThemeData(
            style: ElevatedButton.styleFrom(
-             foregroundColor: Colors.white,
-             backgroundColor: Colors.teal, // Button background
+             foregroundColor: Colors.white, 
+             backgroundColor: const Color(0xFF008080), // Teal background
              shape: RoundedRectangleBorder(
                borderRadius: BorderRadius.circular(8.0),
              ),
@@ -92,17 +100,20 @@ class MyApp extends StatelessWidget {
          ),
          textButtonTheme: TextButtonThemeData(
            style: TextButton.styleFrom(
-             foregroundColor: Colors.teal[700], // Text button color
+             foregroundColor: const Color(0xFF006666), // Darker Teal
            ),
          ),
          inputDecorationTheme: InputDecorationTheme(
+           hintStyle: TextStyle(color: Colors.grey[500]),
+           labelStyle: const TextStyle(color: Color(0xFF008080)), // Teal label
+           floatingLabelStyle: const TextStyle(color: Color(0xFF008080)), 
            border: OutlineInputBorder(
              borderRadius: BorderRadius.circular(8.0),
-             borderSide: BorderSide(color: Colors.grey[400]!)
+             borderSide: BorderSide(color: Colors.grey[400]!) // Light grey border
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8.0),
-              borderSide: BorderSide(color: Colors.teal, width: 2.0),
+              borderSide: const BorderSide(color: Color(0xFF008080), width: 2.0), // Teal focus border
             ),
             contentPadding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 12.0),
          ),

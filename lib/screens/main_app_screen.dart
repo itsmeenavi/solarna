@@ -44,12 +44,12 @@ class _MainAppScreenState extends State<MainAppScreen> {
     return <Widget>[
       HomePage( 
         onToggleSave: _toggleSavedItem, 
-        isItemSaved: _isItemSaved, // Pass the check function
+        isItemSaved: _isItemSaved, 
       ),
-      const EarningsPage(),
-      SavedItemsPage(savedItems: _savedItems), // Pass the list of saved items
-      const CollectionsPage(),
-      const ProfilePage(),
+      EarningsPage(),
+      SavedItemsPage(savedItems: _savedItems), 
+      CollectionsPage(),
+      ProfilePage(),
     ];
   }
 
@@ -78,7 +78,7 @@ class _MainAppScreenState extends State<MainAppScreen> {
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.monetization_on),
+            icon: Icon(Icons.monetization_on), 
             label: 'Earnings',
           ),
           BottomNavigationBarItem(
